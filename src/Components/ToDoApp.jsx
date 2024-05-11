@@ -55,6 +55,11 @@ const ToDoApp = () => {
   }
 
   const List = () => {
+    if (searchText.trim().length === 0) {
+      alert("write something in textbox")
+      return; 
+    }
+  
     setTodoData([
       ...todoData,
       {
