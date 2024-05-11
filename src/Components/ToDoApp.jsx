@@ -1,19 +1,39 @@
+
+
 import "../App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import ListCompnnets from "./ListCompnnets";
+
 const InitialState = [
   {
     id: uuid(),
     task: "work the asignment",
     isComplete: false,
-    timeTemp: Date.now(),
+    timeTemp: 0,
   },
 ];
 
 const ToDoApp = () => {
   const [searchText, setSearchText] = useState("Write Todo");
   const [todoData, setTodoData] = useState(InitialState);
+  const [hours, setHours] = useState(0);
+
+
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem("todoData"));
+    if (storedData) {
+      setTodoData(storedData);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("todoData", JSON.stringify(todoData));
+  }, [todoData]);
+
+  function hoursHandler(e) {
+    setHours(e.target.value);
+  }
 
   function inputHandler(e) {
     setSearchText(e.target.value);
@@ -27,6 +47,13 @@ const ToDoApp = () => {
     setTodoData(updateData);
   }
 
+  function updateHours(id, newHours) {
+    const updatedTodoData = todoData.map((task) =>
+      task.id === id ? { ...task, timeTemp: newHours } : task
+    );
+    setTodoData(updatedTodoData);
+  }
+
   const List = () => {
     setTodoData([
       ...todoData,
@@ -34,7 +61,7 @@ const ToDoApp = () => {
         id: uuid(),
         task: searchText,
         isComplete: false,
-        timeTemp: Date.now(),
+        timeTemp: parseInt(hours),
       },
     ]);
     setSearchText("");
@@ -53,20 +80,35 @@ const ToDoApp = () => {
         />
       </div>
       <div className="flex justify-center mb-4">
+        <input
+          type="number"
+          className="h-12 w-full md:w-1/3 bg-slate-400 rounded-md text-2xl"
+          value={hours}
+          onChange={hoursHandler}
+        />
+      </div>
+      <div className="flex justify-center mb-4">
         <button className="h-14 w-32 bg-green-600 rounded-md" onClick={List}>
           Add
         </button>
       </div>
       <div className="w-full md:w-2/3 mx-auto">
-        <ol className="list-decimal text-black font-extrabold  text-lg">
-          {todoData.length === 0
-            ? "Please Add Todo ... "
-            : todoData.map((List) => (
-                  <>
-                  <ListCompnnets todoData={todoData} List={List} removeList={removeList}  searchText={searchText} key={List.id} />
-                  </>
+        <ul className="list-decimal text-black font-extrabold text-lg">
+          {todoData.length === 0 ? (
+            "Please Add Todo ... "
+          ) : (
+            <>
+              {todoData.map((List) => (
+                <ListCompnnets
+                  key={List.id}
+                  List={List}
+                  removeList={removeList}
+                  updateHours={updateHours}
+                />
               ))}
-        </ol>
+            </>
+          )}
+        </ul>
       </div>
     </div>
   );
